@@ -293,13 +293,11 @@ result, err := client.Request(
 
 ```go
 ctx := context.Background()
-// 使用商户私钥等初始化 client，并使它具有自动定时获取微信支付平台证书的能力
-opts := []core.ClientOption{
-	option.WithWechatPayAutoAuthCipher(mchID, mchCertificateSerialNumber, mchPrivateKey, mchAPIv3Key),
-}
-client, err := core.NewClient(ctx, opts...)
+// 1. 使用商户私钥等初始化 client，并使它具有自动定时获取微信支付平台证书的能力
+// 由于在回调通知的解密过程中无需使用client发送请求，所以这里不用获取client
+option.WithWechatPayAutoAuthCipher(mchID, mchCertificateSerialNumber, mchPrivateKey, mchAPIv3Key)
 	
-// 获取平台证书访问器
+// 2. 根据初始化的单例获取商户对应的平台证书访问器
 certVisitor := downloader.MgrInstance().GetCertificateVisitor(mchID)
 handler := notify.NewNotifyHandler(mchAPIv3Key, verifiers.NewSHA256WithRSAVerifier(certVisitor))
 ```
