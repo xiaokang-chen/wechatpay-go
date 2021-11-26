@@ -288,8 +288,20 @@ result, err := client.Request(
 2. 调用 `handler.ParseNotifyRequest` 验签，并解密报文。
 
 ### 初始化
++ 方法一（推荐）：先手动注册下载器，再获取微信平台证书访问器。（在仅需回调通知验签与解密情景下使用）
 
-+ 方法一（推荐）：如果你像 [发送请求](#发送请求) 那样使用 `WithWechatPayAutoAuthCipher` 初始化 `core.Client`，直接获取微信支付平台证书访问器初始化 `notify.Handler`。
+```go
+ctx := context.Background()
+// 这是一个单纯的回调处理进程，没有使用 WithWechatPayAutoAuthCipher 创建商户的 client，则需要手动注册下载器
+err := downloader.MgrInstance().RegisterDownloaderWithPrivateKey(ctx, mchPrivateKey, mchCertificateSerialNumber, mchID, mchAPIV3Key)
+
+// 注册完成，获取平台证书访问器
+certVisitor := downloader.MgrInstance().GetCertificateVisitor(mchID)
+handler := notify.NewNotifyHandler(mchAPIv3Key, verifiers.NewSHA256WithRSAVerifier(certVisitor))
+
+```
+
++ 方法二：如果你像 [发送请求](#发送请求) 那样使用 `WithWechatPayAutoAuthCipher` 初始化 `core.Client`（验签与解密之后还会用到client），直接获取微信支付平台证书访问器初始化 `notify.Handler`。
 
 ```go
 ctx := context.Background()
@@ -302,19 +314,6 @@ client, err := core.NewClient(ctx, opts...)
 // 获取平台证书访问器
 certVisitor := downloader.MgrInstance().GetCertificateVisitor(mchID)
 handler := notify.NewNotifyHandler(mchAPIv3Key, verifiers.NewSHA256WithRSAVerifier(certVisitor))
-```
-
-+ 方法二：如果没有使用 `WithWechatPayAutoAuthCipher`，则需要先手动注册下载器。
-
-```go
-ctx := context.Background()
-// 这是一个单纯的回调处理进程，没有使用 WithWechatPayAutoAuthCipher 创建商户的 client，则需要手动注册下载器
-err := downloader.MgrInstance().RegisterDownloaderWithPrivateKey(ctx, mchPrivateKey, mchCertificateSerialNumber, mchID, mchAPIV3Key)
-
-// 注册完成，获取平台证书访问器
-certVisitor := downloader.MgrInstance().GetCertificateVisitor(mchID)
-handler := notify.NewNotifyHandler(mchAPIv3Key, verifiers.NewSHA256WithRSAVerifier(certVisitor))
-
 ```
 
 + 方法三：使用本地的微信支付平台证书和商户 APIv3 密钥初始化 `Handler`。
