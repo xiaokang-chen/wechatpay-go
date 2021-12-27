@@ -289,6 +289,7 @@ result, err := client.Request(
 
 ### 初始化
 + 方法一（大多数场景）：先手动注册下载器，再获取微信平台证书访问器。
+
 适用场景： 仅需要对回调通知验证签名并解密的场景。例如，基础支付的回调通知。
 
 ```go
@@ -302,6 +303,7 @@ handler := notify.NewNotifyHandler(mchAPIv3Key, verifiers.NewSHA256WithRSAVerifi
 ```
 
 + 方法二：像 [发送请求](#发送请求) 那样使用 `WithWechatPayAutoAuthCipher` 初始化 `core.Client`，然后再用client进行接口调用。
+
 适用场景：需要对回调通知验证签名并解密，并且后续需要使用 Client 的场景。例如，电子发票的回调通知，验签与解密后还需要通过 Client 调用用户填写抬头接口。
 
 ```go
@@ -320,6 +322,7 @@ handler := notify.NewNotifyHandler(mchAPIv3Key, verifiers.NewSHA256WithRSAVerifi
 ```
 
 + 方法三：使用本地的微信支付平台证书和商户 APIv3 密钥初始化 `Handler`。
+
 适用场景：首次通过工具下载平台证书到本地，后续使用本地管理的平台证书进行验签与解密。
 
 ```go
